@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precios con Análisis IA</title>
+    <!-- Tailwind CSS para un diseño moderno y adaptable -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilo personalizado para usar la fuente Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo para los checkboxes */
+        .form-checkbox {
+            appearance: none;
+            background-color: #4a5568;
+            border: 1px solid #718096;
+            border-radius: 0.25rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            display: inline-block;
+            vertical-align: middle;
+            position: relative;
+            cursor: pointer;
+        }
+        .form-checkbox:checked {
+            background-color: #48bb78;
+            border-color: #48bb78;
+        }
+        .form-checkbox:checked::after {
+            content: '✔';
+            font-size: 0.8rem;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        /* Animación para el spinner de carga */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4 sm:p-6">
+
+    <div class="w-full max-w-7xl bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-green-400">Calculadora de Precios de Servicios</h1>
+            <p class="text-gray-400 mt-2">Responde a las siguientes preguntas para obtener una cotización personalizada.</p>
+        </header>
+
+        <!-- Formulario del cuestionario -->
+        <form id="priceCalculatorForm" class="space-y-6">
+            <!-- Pregunta 1: Número de empleados -->
+            <div>
+                <label for="employees" class="block text-lg font-medium text-gray-200 mb-2">1. ¿Cuántos empleados tienes?</label>
+                <select id="employees" name="employees" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition">
+                    <option value="0">0 empleados</option>
+                    <option value="1-20">1-20 empleados</option>
+                    <option value="21-49">21-49 empleados</option>
+                    <option value="50-200">50-200 empleados</option>
+                    <option value="200-250">201-250 empleados</option>
+                </select>
+            </div>
+
+            <!-- Resto de preguntas (checkboxes y numéricas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pt-4 border-t border-gray-700">
+                <div class="flex items-center space-x-3"><input type="checkbox" id="riesgo" name="riesgo" class="form-checkbox"><label for="riesgo" class="text-gray-300">¿Estás en algún sector de actividad de riesgo? <span class="text-gray-500">(+20%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="rlt" name="rlt" class="form-checkbox"><label for="rlt" class="text-gray-300">¿Tienes RLT en la empresa? <span class="text-gray-500">(+10%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="sancion" name="sancion" class="form-checkbox"><label for="sancion" class="text-gray-300">¿Has tenido alguna sanción de protección de datos? <span class="text-gray-500">(+20%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="auditoria" name="auditoria" class="form-checkbox"><label for="auditoria" class="text-gray-300">¿Hace más de 2 años que no haces una auditoría? <span class="text-gray-500">(+10%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="ecommerce" name="ecommerce" class="form-checkbox"><label for="ecommerce" class="text-gray-300">¿Tienes comercio electrónico? <span class="text-gray-500">(+5%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="transferencias" name="transferencias" class="form-checkbox"><label for="transferencias" class="text-gray-300">¿Haces transferencias internacionales de datos? <span class="text-gray-500">(+5%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="publicidad" name="publicidad" class="form-checkbox"><label for="publicidad" class="text-gray-300">¿Usas datos para publicidad o perfilado? <span class="text-gray-500">(+5%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="datos_especiales" name="datos_especiales" class="form-checkbox"><label for="datos_especiales" class="text-gray-300">¿Tratas categorías especiales de datos? <span class="text-gray-500">(+5%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="ia" name="ia" class="form-checkbox"><label for="ia" class="text-gray-300">¿Estáis usando IA? <span class="text-gray-500">(+10%)</span></label></div>
+                <div class="flex items-center space-x-3"><input type="checkbox" id="menores" name="menores" class="form-checkbox"><label for="menores" class="text-gray-300">¿Tratáis datos de menores? <span class="text-gray-500">(+5%)</span></label></div>
+                <div class="md:col-span-2"><label for="brechas" class="block text-gray-200 mb-2">¿Cuántas brechas de seguridad has tenido en los dos últimos años? <span class="text-gray-500">(+5% por brecha)</span></label><input type="number" id="brechas" name="brechas" min="0" value="0" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"></div>
+            </div>
+        </form>
+
+        <!-- Sección de Resultados en formato de tabla comparativa -->
+        <div id="results" class="mt-10 pt-6 border-t border-gray-700 overflow-x-auto">
+            <h2 class="text-2xl font-bold text-center mb-6 text-green-400">Comparativa de Planes</h2>
+            <div class="w-full">
+                <table class="w-full text-sm text-left text-gray-300">
+                    <thead class="text-xs text-white uppercase bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 rounded-tl-lg">Características</th>
+                            <th scope="col" class="px-6 py-4 text-center"><span class="block text-lg">Básico</span><span id="price-basico" class="block text-2xl font-bold text-green-400"></span></th>
+                            <th scope="col" class="px-6 py-4 text-center border-2 border-yellow-400 bg-gray-900"><span class="block text-lg">Gold</span><span id="price-gold" class="block text-2xl font-bold text-yellow-400"></span></th>
+                            <th scope="col" class="px-6 py-4 text-center rounded-tr-lg"><span class="block text-lg">Premium</span><span id="price-premium" class="block text-2xl font-bold text-purple-400"></span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Filas actualizadas según la nueva imagen -->
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Repositorio documental</th><td class="px-6 py-4 text-center text-green-400 text-xl">✓</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Cláusulas específicas de cada sector</th><td class="px-6 py-4 text-center text-green-400 text-xl">✓</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Redacción ilimitada de protocolos y procedimientos</th><td class="px-6 py-4 text-center text-red-500 text-xl">✗</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Análisis de brechas de seguridad</th><td class="px-6 py-4 text-center text-green-400 text-xl">✓</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Acompañamiento de consultor experto</th><td class="px-6 py-4 text-center text-green-400 text-xl">✓</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Auto auditoría</th><td class="px-6 py-4 text-center text-green-400 text-xl">✓</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Seguro</th><td class="px-6 py-4 text-center text-green-400 text-xl">✓</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-sm font-semibold">A presupuestar</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Auditoría de seguridad anual de un externo</th><td class="px-6 py-4 text-center text-sm font-semibold">Años alternos</td><td class="px-6 py-4 text-center text-sm font-semibold border-x-2 border-yellow-400 bg-gray-900">Años alternos</td><td class="px-6 py-4 text-center text-sm font-semibold">Anual</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Control periódico de aspectos legales</th><td class="px-6 py-4 text-center text-red-500 text-xl">✗</td><td class="px-6 py-4 text-center text-sm font-semibold border-x-2 border-yellow-400 bg-gray-900">Años alternos</td><td class="px-6 py-4 text-center text-sm font-semibold">Anual</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Consultoría ilimitada</th><td class="px-6 py-4 text-center text-green-400 text-xl">✓</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Proyecto de cumplimiento</th><td class="px-6 py-4 text-center text-red-500 text-xl">✗</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Contacto directo con un asesor jurídico especializado</th><td class="px-6 py-4 text-center text-red-500 text-xl">✗</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Trabajo del consultor</th><td class="px-6 py-4 text-center text-red-500 text-xl">✗</td><td class="px-6 py-4 text-center text-sm font-semibold border-x-2 border-yellow-400 bg-gray-900">Acompañamiento</td><td class="px-6 py-4 text-center text-sm font-semibold">Entrega finalizada</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Defensa jurídica hasta agotar la vía administrativa</th><td class="px-6 py-4 text-center text-red-500 text-xl">✗</td><td class="px-6 py-4 text-center text-yellow-400 text-xl border-x-2 border-yellow-400 bg-gray-900">✓</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 border-b border-gray-700"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">Evaluaciones de impacto incluidas</th><td class="px-6 py-4 text-center text-red-500 text-xl">✗</td><td class="px-6 py-4 text-center text-red-500 text-xl border-x-2 border-yellow-400 bg-gray-900">✗</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                        <tr class="bg-gray-800 rounded-b-lg"><th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap rounded-bl-lg">Análisis del ciclo de vida del dato</th><td class="px-6 py-4 text-center text-red-500 text-xl">✗</td><td class="px-6 py-4 text-center text-red-500 text-xl border-x-2 border-yellow-400 bg-gray-900">✗</td><td class="px-6 py-4 text-center text-purple-400 text-xl">✓</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sección de Análisis con IA (Gemini API) -->
+        <div id="ai-analysis-section" class="mt-10 pt-6 border-t border-gray-700 text-center">
+            <h2 class="text-2xl font-bold text-center mb-4 text-blue-400">Análisis y Recomendación Personalizada</h2>
+            <p class="text-gray-400 mb-6">Obtén un análisis de riesgo detallado y una recomendación de plan experta generada por nuestra IA.</p>
+            <button id="get-ai-analysis-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105">
+                ✨ Obtener Análisis de Riesgo con IA
+            </button>
+            <div id="ai-loader" class="loader" style="display: none;"></div>
+            <div id="ai-result" class="mt-6 p-6 bg-gray-900 rounded-lg text-left whitespace-pre-wrap"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Lógica de la Calculadora en JavaScript ---
+
+        // Función principal para calcular los precios
+        function calculatePrices() {
+            // 1. OBTENER PRECIOS BASE
+            const employeeRange = document.getElementById('employees').value;
+            let basePrices = { basico: 0, gold: 0, premium: 0 };
+            switch (employeeRange) {
+                case '0': basePrices = { basico: 300, gold: 600, premium: 1200 }; break;
+                case '1-20': basePrices = { basico: 400, gold: 600, premium: 1400 }; break;
+                case '21-49': basePrices = { basico: 400, gold: 600, premium: 1600 }; break;
+                case '50-200': basePrices = { basico: 400, gold: 990, premium: 1800 }; break;
+                case '200-250': basePrices = { basico: 400, gold: 1200, premium: 2000 }; break;
+            }
+
+            // 2. CALCULAR EL PORCENTAJE DE INCREMENTO TOTAL
+            let totalPercentageIncrease = 0;
+            if (document.getElementById('riesgo').checked) totalPercentageIncrease += 0.20;
+            if (document.getElementById('rlt').checked) totalPercentageIncrease += 0.10;
+            if (document.getElementById('sancion').checked) totalPercentageIncrease += 0.20;
+            if (document.getElementById('auditoria').checked) totalPercentageIncrease += 0.10;
+            if (document.getElementById('ecommerce').checked) totalPercentageIncrease += 0.05;
+            if (document.getElementById('transferencias').checked) totalPercentageIncrease += 0.05;
+            if (document.getElementById('publicidad').checked) totalPercentageIncrease += 0.05;
+            if (document.getElementById('datos_especiales').checked) totalPercentageIncrease += 0.05;
+            if (document.getElementById('ia').checked) totalPercentageIncrease += 0.10;
+            if (document.getElementById('menores').checked) totalPercentageIncrease += 0.05;
+            const numBrechas = parseInt(document.getElementById('brechas').value) || 0;
+            totalPercentageIncrease += numBrechas * 0.05;
+
+            // 3. CALCULAR PRECIOS FINALES
+            const finalPriceBasico = basePrices.basico * (1 + totalPercentageIncrease);
+            const finalPriceGold = basePrices.gold * (1 + totalPercentageIncrease);
+            const finalPricePremium = basePrices.premium * (1 + totalPercentageIncrease);
+
+            // 4. MOSTRAR LOS RESULTADOS EN LA PÁGINA
+            const formatCurrency = (value) => value.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+            document.getElementById('price-basico').innerText = formatCurrency(finalPriceBasico);
+            document.getElementById('price-gold').innerText = formatCurrency(finalPriceGold);
+            document.getElementById('price-premium').innerText = formatCurrency(finalPricePremium);
+        }
+
+        // --- Lógica para el Análisis con IA (Gemini API) ---
+
+        const aiButton = document.getElementById('get-ai-analysis-btn');
+        const aiLoader = document.getElementById('ai-loader');
+        const aiResultContainer = document.getElementById('ai-result');
+
+        aiButton.addEventListener('click', getAiAnalysis);
+
+        async function getAiAnalysis() {
+            aiLoader.style.display = 'block';
+            aiResultContainer.innerHTML = '';
+            aiButton.disabled = true;
+
+            // 1. Recopilar datos del formulario para el prompt
+            const userAnswers = {
+                empleados: document.getElementById('employees').selectedOptions[0].text,
+                sectorRiesgo: document.getElementById('riesgo').checked ? 'Sí' : 'No',
+                tieneRLT: document.getElementById('rlt').checked ? 'Sí' : 'No',
+                sancionesPrevias: document.getElementById('sancion').checked ? 'Sí' : 'No',
+                auditoriaAntigua: document.getElementById('auditoria').checked ? 'Sí' : 'No',
+                tieneEcommerce: document.getElementById('ecommerce').checked ? 'Sí' : 'No',
+                transferenciasInternacionales: document.getElementById('transferencias').checked ? 'Sí' : 'No',
+                usaPublicidad: document.getElementById('publicidad').checked ? 'Sí' : 'No',
+                trataDatosEspeciales: document.getElementById('datos_especiales').checked ? 'Sí' : 'No',
+                usaIA: document.getElementById('ia').checked ? 'Sí' : 'No',
+                trataDatosMenores: document.getElementById('menores').checked ? 'Sí' : 'No',
+                numeroBrechas: document.getElementById('brechas').value
+            };
+
+            // 2. Construir el prompt para la API de Gemini
+            const prompt = `
+                Actúa como un consultor experto en protección de datos y ciberseguridad. Un cliente potencial ha rellenado un cuestionario y ha obtenido una cotización. Ahora, necesita un análisis de su situación y una recomendación.
+
+                Aquí están los datos del cliente:
+                - Rango de empleados: ${userAnswers.empleados}
+                - ¿Sector de actividad de riesgo?: ${userAnswers.sectorRiesgo}
+                - ¿Tiene Representación Legal de los Trabajadores (RLT)?: ${userAnswers.tieneRLT}
+                - ¿Ha tenido sanciones de protección de datos?: ${userAnswers.sancionesPrevias}
+                - ¿Última auditoría hace más de 2 años?: ${userAnswers.auditoriaAntigua}
+                - ¿Tiene comercio electrónico?: ${userAnswers.tieneEcommerce}
+                - ¿Realiza transferencias internacionales de datos?: ${userAnswers.transferenciasInternacionales}
+                - ¿Usa datos para publicidad o perfilado?: ${userAnswers.usaPublicidad}
+                - ¿Trata categorías especiales de datos (salud, ideología, etc.)?: ${userAnswers.trataDatosEspeciales}
+                - ¿Usa Inteligencia Artificial?: ${userAnswers.usaIA}
+                - ¿Trata datos de menores?: ${userAnswers.trataDatosMenores}
+                - Número de brechas de seguridad en los últimos 2 años: ${userAnswers.numeroBrechas}
+
+                Basado en esta información, genera un informe en español para el cliente que incluya lo siguiente:
+                1.  Un saludo cordial y una introducción al análisis.
+                2.  **Análisis de Riesgo:** Explica de forma clara cuáles de sus respuestas representan los mayores factores de riesgo y por qué. Sé específico.
+                3.  **Recomendación de Plan:** Recomienda explícitamente uno de los tres planes (Básico, Gold o Premium) y justifica detalladamente por qué es la opción más adecuada para su perfil de riesgo y necesidades.
+                4.  **Consejos Adicionales:** Ofrece 2 o 3 consejos de seguridad prácticos y accionables que el cliente podría empezar a implementar.
+                
+                Formatea la respuesta de manera profesional y fácil de leer, usando negritas para resaltar los puntos clave.
+            `;
+            
+            // 3. Llamar a la API de Gemini
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // La clave se gestiona automáticamente en el entorno.
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error de red: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    aiResultContainer.innerText = text;
+                } else {
+                    throw new Error("La respuesta de la API no tiene el formato esperado.");
+                }
+
+            } catch (error) {
+                console.error("Error al llamar a la API de Gemini:", error);
+                aiResultContainer.innerText = "Lo sentimos, ha ocurrido un error al generar el análisis. Por favor, inténtalo de nuevo más tarde.";
+            } finally {
+                aiLoader.style.display = 'none';
+                aiButton.disabled = false;
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        const form = document.getElementById('priceCalculatorForm');
+        const inputs = form.querySelectorAll('select, input');
+        inputs.forEach(input => {
+            input.addEventListener('change', calculatePrices);
+            if(input.type === 'number') {
+                input.addEventListener('input', calculatePrices);
+            }
+        });
+
+        // Calcular los precios iniciales al cargar la página
+        window.onload = calculatePrices;
+
+    </script>
+</body>
+</html>
